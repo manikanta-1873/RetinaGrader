@@ -1,0 +1,24 @@
+# Datasets
+APTOS/
+Retina Vessel Segmentation/
+CHASE_DB1
+DRIVE/
+HRF/
+LES-AV/
+RITE/
+labels-ah/
+
+# Outputs
+outputs/
+stage2_masks/
+final_vessel_masks/
+
+# Model weights
+*.pth
+
+# Python
+__pycache__/
+*.pyc
+
+# Mac
+.DS_Store

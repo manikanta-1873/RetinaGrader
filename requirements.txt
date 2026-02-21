@@ -1,0 +1,37 @@
+# =========================
+# Core Deep Learning
+# =========================
+torch
+torchvision
+timm
+
+# =========================
+# Image Processing
+# =========================
+opencv-python
+Pillow
+scikit-image
+
+# =========================
+# Scientific Computing
+# =========================
+numpy
+scipy
+pandas
+
+# =========================
+# Machine Learning Metrics
+# =========================
+scikit-learn
+
+# =========================
+# PDF Report Generation
+# =========================
+reportlab
+
+# =========================
+# Utilities
+# =========================
+tqdm
+matplotlib
+seaborn
