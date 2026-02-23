@@ -1,37 +1,12 @@
-# =========================
-# Core Deep Learning
-# =========================
+streamlit
 torch
 torchvision
 timm
-
-# =========================
-# Image Processing
-# =========================
-opencv-python
-Pillow
-scikit-image
-
-# =========================
-# Scientific Computing
-# =========================
+opencv-python-headless
 numpy
-scipy
 pandas
-
-# =========================
-# Machine Learning Metrics
-# =========================
 scikit-learn
-
-# =========================
-# PDF Report Generation
-# =========================
-reportlab
-
-# =========================
-# Utilities
-# =========================
-tqdm
 matplotlib
-seaborn
+Pillow
+reportlab
+tqdm
