@@ -150,3 +150,43 @@ def analyze_retina(image_path, patient_id):
 # if __name__ == "__main__":
 #     test_image = "APTOS/train_images/000c1434d8d7.png"
 #     analyze_retina(test_image, patient_id="PAT_001")
+
+# ==============================================
+# STREAMLIT UI
+# ==============================================
+
+st.set_page_config(page_title="RetinaGrader", layout="centered")
+
+st.title("🩺 RetinaGrader — AI Retinal Analysis System")
+
+st.write("Upload a retinal fundus image to generate segmentation, DR grading, and clinical report.")
+
+uploaded_file = st.file_uploader("Upload Fundus Image", type=["png", "jpg", "jpeg"])
+
+if uploaded_file is not None:
+
+    # Save uploaded image temporarily
+    temp_path = OUTPUT_DIR / uploaded_file.name
+    with open(temp_path, "wb") as f:
+        f.write(uploaded_file.getbuffer())
+
+    st.image(temp_path, caption="Uploaded Image", use_container_width=True)
+
+    patient_id = st.text_input("Enter Patient ID", value="PAT_001")
+
+    if st.button("Run Full Analysis"):
+
+        with st.spinner("Running full retinal analysis..."):
+
+            report_path = analyze_retina(temp_path, patient_id)
+
+        st.success("Analysis Complete ✅")
+
+        # Download button
+        with open(report_path, "rb") as f:
+            st.download_button(
+                label="Download Clinical Report",
+                data=f,
+                file_name=f"{patient_id}_clinical_report.pdf",
+                mime="application/pdf"
+            )
