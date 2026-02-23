@@ -10,8 +10,6 @@ from pathlib import Path
 from PIL import Image
 import streamlit as st
 
-os.environ["PORT"] = os.environ.get("PORT", "10000")
-
 from retina_system.segmentation import segment_vessels
 from retina_system.classification import classify_image, model
 from retina_system.feature_extraction import extract_vessel_features
