@@ -8,6 +8,9 @@ import torch
 import numpy as np
 from pathlib import Path
 from PIL import Image
+import streamlit as st
+
+os.environ["PORT"] = os.environ.get("PORT", "10000")
 
 from retina_system.segmentation import segment_vessels
 from retina_system.classification import classify_image, model
@@ -144,6 +147,6 @@ def analyze_retina(image_path, patient_id):
 # -------------------------------------------------
 # RUN EXAMPLE
 # -------------------------------------------------
-if __name__ == "__main__":
-    test_image = "APTOS/train_images/000c1434d8d7.png"
-    analyze_retina(test_image, patient_id="PAT_001")
+# if __name__ == "__main__":
+#     test_image = "APTOS/train_images/000c1434d8d7.png"
+#     analyze_retina(test_image, patient_id="PAT_001")
