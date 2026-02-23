@@ -7,14 +7,15 @@ HRF/
 LES-AV/
 RITE/
 labels-ah/
+Preprocessed/
+
 
 # Outputs
 outputs/
 stage2_masks/
 final_vessel_masks/
 
-# Model weights
-*.pth
+
 
 # Python
 __pycache__/
@@ -22,3 +23,7 @@ __pycache__/
 
 # Mac
 .DS_Store
+
+#Notebooks
+*.ipynb
+.ipynb_checkpoints/
