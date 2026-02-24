@@ -395,11 +395,19 @@ with center_col2:
 
             dr_grade, confidence, _ = classify_image(temp_path)
 
-            risk = (
-                "Critical" if dr_grade in ["Severe","Proliferative"]
-                else "Moderate" if dr_grade=="Moderate"
-                else "Low"
-            )
+            # ✅ FIXED RISK LOGIC
+            grade = dr_grade.lower().strip()
+
+            if "proliferative" in grade:
+                risk = "Critical 🚨"
+            elif "severe" in grade:
+                risk = "High ⚠️"
+            elif "moderate" in grade:
+                risk = "Moderate ⚡"
+            elif "mild" in grade:
+                risk = "Low"
+            else:
+                risk = "No Risk"
 
             metric_col1, metric_col2, metric_col3 = st.columns(3)
 
