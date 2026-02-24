@@ -132,35 +132,6 @@ RetinaGrader/
 
 ---
 
-# 🛠️ Installation
-
-Clone the repository:
-
-```bash
-git clone https://github.com/manikanta-1873/RetinaGrader.git
-cd RetinaGrader
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-# ▶️ Run Locally (Streamlit)
-
-```bash
-streamlit run app.py
-```
-
-Then open:
-
-```
-http://localhost:8501
-```
-
 ---
 
 # 🧪 Model Details
