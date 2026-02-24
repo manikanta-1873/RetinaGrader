@@ -10,3 +10,4 @@ matplotlib
 Pillow
 reportlab
 tqdm
+scikit-image
