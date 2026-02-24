@@ -10,6 +10,8 @@ from pathlib import Path
 from PIL import Image
 import streamlit as st
 
+os.environ["PORT"] = os.environ.get("PORT", "10000")
+
 from retina_system.segmentation import segment_vessels
 from retina_system.classification import classify_image, model
 from retina_system.feature_extraction import extract_vessel_features
@@ -149,42 +151,272 @@ def analyze_retina(image_path, patient_id):
 #     test_image = "APTOS/train_images/000c1434d8d7.png"
 #     analyze_retina(test_image, patient_id="PAT_001")
 
+# -------------------------------------------------
+# 🛑 ROBUST FUNDUS IMAGE VALIDATION (Improved)
+# -------------------------------------------------
+def is_fundus_image(image_path):
+
+    img = cv2.imread(str(image_path))
+    if img is None:
+        return False
+
+    img = cv2.resize(img, (512, 512))
+    h, w = img.shape[:2]
+
+    # Convert to grayscale
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # -------------------------------------------------
+    # 1️⃣ Check circular mask using threshold
+    # -------------------------------------------------
+    _, thresh = cv2.threshold(gray, 15, 255, cv2.THRESH_BINARY)
+    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    if len(contours) == 0:
+        return False
+
+    largest = max(contours, key=cv2.contourArea)
+    area = cv2.contourArea(largest)
+    circle_area = np.pi * (min(h, w)//2)**2
+
+    circular_ratio = area / circle_area
+
+    # Fundus images typically fill 60%+ circular region
+    if circular_ratio < 0.5:
+        return False
+
+    # -------------------------------------------------
+    # 2️⃣ Check dark border (fundus has black edges)
+    # -------------------------------------------------
+    border_pixels = np.concatenate([
+        gray[0:20, :].flatten(),
+        gray[-20:, :].flatten(),
+        gray[:, 0:20].flatten(),
+        gray[:, -20:].flatten()
+    ])
+
+    border_dark_ratio = np.mean(border_pixels < 40)
+
+    if border_dark_ratio < 0.4:
+        return False
+
+    # -------------------------------------------------
+    # 3️⃣ Check red channel dominance
+    # -------------------------------------------------
+    b, g, r = cv2.split(img)
+
+    red_mean = np.mean(r)
+    green_mean = np.mean(g)
+    blue_mean = np.mean(b)
+
+    if not (red_mean > green_mean and red_mean > blue_mean):
+        return False
+
+    # -------------------------------------------------
+    # 4️⃣ Center brightness check
+    # -------------------------------------------------
+    center_crop = gray[200:312, 200:312]
+    if np.mean(center_crop) < 50:
+        return False
+
+    return True
+
 # ==============================================
-# STREAMLIT UI
+# ULTRA FUTURISTIC RETINA SCANNER UI
 # ==============================================
 
-st.set_page_config(page_title="RetinaGrader", layout="centered")
+st.set_page_config(
+    page_title="RetinaGrader",
+    page_icon="👁️",
+    layout="wide"
+)
 
-st.title("🩺 RetinaGrader — AI Retinal Analysis System")
+# -------------------------------------------------
+# 🌌 ADVANCED RETINA SCANNER CSS
+# -------------------------------------------------
+st.markdown("""
+<style>
 
-st.write("Upload a retinal fundus image to generate segmentation, DR grading, and clinical report.")
+/* Deep medical dark background */
+.stApp {
+    background: radial-gradient(circle at center, #0a0f1f 0%, #000000 70%);
+    color: #E0F7FA;
+}
 
-uploaded_file = st.file_uploader("Upload Fundus Image", type=["png", "jpg", "jpeg"])
+/* Retina scan animation */
+.retina-loader {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 4px solid rgba(0,255,255,0.3);
+    border-top: 4px solid #00FFFF;
+    animation: spin 2s linear infinite;
+    margin: auto;
+}
 
-if uploaded_file is not None:
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 
-    # Save uploaded image temporarily
-    temp_path = OUTPUT_DIR / uploaded_file.name
-    with open(temp_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
+/* Glowing hospital card */
+.block-container {
+    background: rgba(0, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 0 30px rgba(0,255,255,0.2);
+}
 
-    st.image(temp_path, caption="Uploaded Image", use_container_width=True)
+/* Neon buttons */
+.stButton>button {
+    background: linear-gradient(90deg, #00ffff, #0077ff);
+    color: black;
+    font-weight: bold;
+    border-radius: 15px;
+    height: 3.2em;
+    font-size: 16px;
+}
 
-    patient_id = st.text_input("Enter Patient ID", value="PAT_001")
+/* Clinical metrics */
+[data-testid="metric-container"] {
+    background: rgba(0,255,255,0.08);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 15px rgba(0,255,255,0.2);
+}
 
-    if st.button("Run Full Analysis"):
+/* Remove footer */
+footer {visibility: hidden;}
 
-        with st.spinner("Running full retinal analysis..."):
+</style>
+""", unsafe_allow_html=True)
 
+# -------------------------------------------------
+# 👁️ FUTURISTIC HEADER
+# -------------------------------------------------
+st.markdown("""
+<h1 style='text-align:center; font-size:60px; color:#00FFFF;'>
+👁️ RETINAGRADER
+</h1>
+<h3 style='text-align:center; color:#00bcd4;'>
+Advanced Clinical AI Retina Scanner
+</h3>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
+
+# -------------------------------------------------
+# 🏥 HOSPITAL SIDEBAR
+# -------------------------------------------------
+with st.sidebar:
+    st.title("🏥 Clinical Module")
+    st.markdown("""
+    ### AI Diagnostic Pipeline
+
+    ✔ Multi-Scale Vessel Segmentation  
+    ✔ Vessel Feature Quantification  
+    ✔ DR Severity Grading  
+    ✔ Explainable AI (Grad-CAM)  
+    ✔ Automated Clinical Report  
+
+    ---
+    **System Status:** 🟢 Online  
+    **Inference Engine:** PyTorch  
+    """)
+
+# -------------------------------------------------
+# 🏥 CENTERED MEDICAL DASHBOARD LAYOUT
+# -------------------------------------------------
+
+# Create centered container
+center_col1, center_col2, center_col3 = st.columns([1, 3, 1])
+
+with center_col2:
+
+    st.markdown("### 📤 Upload Fundus Image")
+
+    uploaded_file = st.file_uploader(
+        "",
+        type=["png","jpg","jpeg"],
+        label_visibility="collapsed"
+    )
+
+    if uploaded_file is not None:
+
+        temp_path = OUTPUT_DIR / uploaded_file.name
+        with open(temp_path, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+
+        st.markdown("### 🖼 Retinal Scan")
+        st.image(temp_path, use_container_width=True)
+
+        st.markdown("### 🆔 Patient Information")
+        patient_id = st.text_input("", value="PAT_001")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        if st.button("🧠 Initiate Retina Scan", use_container_width=True):
+
+            # -------------------------------------------------
+            # 🛑 FUNDUS VALIDATION
+            # -------------------------------------------------
+            if not is_fundus_image(temp_path):
+                st.error("🚨 Invalid Image Detected")
+                st.warning("Please upload a valid retinal fundus image only.")
+                st.stop()
+
+            # -------------------------------------------------
+            # 🌀 Retina Scan Loader
+            # -------------------------------------------------
+            loader_placeholder = st.empty()
+            loader_placeholder.markdown(
+                """
+                <div style="text-align:center;">
+                    <div class='retina-loader'></div>
+                    <h3 style='color:#00FFFF;'>Scanning Retina...</h3>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+            # Run AI
             report_path = analyze_retina(temp_path, patient_id)
 
-        st.success("Analysis Complete ✅")
+            loader_placeholder.empty()
 
-        # Download button
-        with open(report_path, "rb") as f:
-            st.download_button(
-                label="Download Clinical Report",
-                data=f,
-                file_name=f"{patient_id}_clinical_report.pdf",
-                mime="application/pdf"
+            st.success("✅ Retina Scan Completed")
+
+            # -------------------------------------------------
+            # 🧬 CLINICAL DIAGNOSTIC PANEL
+            # -------------------------------------------------
+            st.markdown("---")
+            st.markdown("## 🧬 Clinical Diagnostic Panel")
+
+            dr_grade, confidence, _ = classify_image(temp_path)
+
+            risk = (
+                "Critical" if dr_grade in ["Severe","Proliferative"]
+                else "Moderate" if dr_grade=="Moderate"
+                else "Low"
             )
+
+            metric_col1, metric_col2, metric_col3 = st.columns(3)
+
+            metric_col1.metric("DR Grade", dr_grade)
+            metric_col2.metric("Confidence", f"{confidence*100:.2f}%")
+            metric_col3.metric("Risk Level", risk)
+
+            st.markdown("---")
+
+            # -------------------------------------------------
+            # 📄 Download Report
+            # -------------------------------------------------
+            with open(report_path, "rb") as f:
+                st.download_button(
+                    "📄 Download Clinical Report",
+                    data=f,
+                    file_name=f"{patient_id}_clinical_report.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
